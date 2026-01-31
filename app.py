@@ -2,26 +2,75 @@ import io
 
 import pandas as pd
 import streamlit as st
+from PIL import Image
 
 # ==============================================================================
-# CONFIGURACIÓN DE PÁGINA
+# 1. CONFIGURACIÓN DE PÁGINA Y TEMA CORPORATIVO
 # ==============================================================================
 st.set_page_config(
-    page_title="Asistente Fiscal F910 - Web Full", layout="wide", page_icon="📊"
+    page_title="Asistente Fiscal F910",
+    layout="wide",
+    page_icon="📊",
+    initial_sidebar_state="expanded",
 )
 
-# Estilos CSS para apariencia profesional
+# --- INYECCIÓN DE ESTILOS CSS (Basado en STYLE_CONFIG de onev2.8.txt) ---
+# Recuperamos tus colores: Sidebar Azul (#2C3E50), Fondo Gris Claro (#ECF0F1)
 st.markdown(
     """
     <style>
-    .main {background-color: #f0f2f6;}
-    .stButton>button {width: 100%; border-radius: 5px; font-weight: bold; height: 3em;}
-    h1, h2, h3 {color: #2C3E50;}
+        /* Forzar tema claro en el contenido principal */
+        .main {
+            background-color: #ECF0F1;
+        }
+
+        /* Estilo del Sidebar (Barra lateral) */
+        [data-testid="stSidebar"] {
+            background-color: #2C3E50;
+        }
+
+        /* Textos del Sidebar en blanco */
+        [data-testid="stSidebar"] .css-17lntkn, [data-testid="stSidebar"] p, [data-testid="stSidebar"] label {
+            color: #FFFFFF !important;
+        }
+
+        /* Títulos H1, H2, H3 en color oscuro profesional */
+        h1, h2, h3 {
+            color: #2C3E50 !important;
+            font-family: 'Segoe UI', sans-serif;
+        }
+
+        /* Botones personalizados (Turquesa como en tu app original) */
+        .stButton>button {
+            background-color: #1ABC9C;
+            color: white;
+            border-radius: 8px;
+            height: 3em;
+            width: 100%;
+            border: none;
+            font-weight: bold;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            transition: all 0.3s;
+        }
+        .stButton>button:hover {
+            background-color: #16a085;
+            color: white;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        /* Ocultar elementos de marca de Streamlit para que parezca app propia */
+        #MainMenu {visibility: hidden;}
+        footer {visibility: hidden;}
+        header {visibility: hidden;}
+
+        /* Contenedores blancos (Tarjetas) */
+        .block-container {
+            padding-top: 2rem;
+        }
     </style>
-    """,
+""",
     unsafe_allow_html=True,
 )
-
 # ==============================================================================
 # VARIABLES GLOBALES Y MAPEO (Basado en onev2.8.txt - Fuentes 704-706)
 # ==============================================================================
