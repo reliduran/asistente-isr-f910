@@ -1,7 +1,6 @@
-import io
-
-import pandas as pd
 import streamlit as st
+import pandas as pd
+import io
 from PIL import Image
 
 # ==============================================================================
@@ -11,36 +10,33 @@ st.set_page_config(
     page_title="Asistente Fiscal F910",
     layout="wide",
     page_icon="📊",
-    initial_sidebar_state="expanded",
+    initial_sidebar_state="expanded"
 )
 
-# --- INYECCIÓN DE ESTILOS CSS (Basado en STYLE_CONFIG de onev2.8.txt) ---
-# Recuperamos tus colores: Sidebar Azul (#2C3E50), Fondo Gris Claro (#ECF0F1)
-st.markdown(
-    """
+# --- CORRECCIÓN DE ESTILOS CSS ---
+st.markdown("""
     <style>
-        /* Forzar tema claro en el contenido principal */
+        /* Fondo general */
         .main {
-            background-color: #ECF0F1;
+            background-color: #ECF0F1; 
         }
-
+        
         /* Estilo del Sidebar (Barra lateral) */
         [data-testid="stSidebar"] {
             background-color: #2C3E50;
         }
-
+        
         /* Textos del Sidebar en blanco */
-        [data-testid="stSidebar"] .css-17lntkn, [data-testid="stSidebar"] p, [data-testid="stSidebar"] label {
+        [data-testid="stSidebar"] * {
             color: #FFFFFF !important;
         }
-
-        /* Títulos H1, H2, H3 en color oscuro profesional */
+        
+        /* Títulos H1, H2, H3 oscuros */
         h1, h2, h3 {
             color: #2C3E50 !important;
-            font-family: 'Segoe UI', sans-serif;
         }
-
-        /* Botones personalizados (Turquesa como en tu app original) */
+        
+        /* Botones personalizados */
         .stButton>button {
             background-color: #1ABC9C;
             color: white;
@@ -49,28 +45,38 @@ st.markdown(
             width: 100%;
             border: none;
             font-weight: bold;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-            transition: all 0.3s;
         }
         .stButton>button:hover {
             background-color: #16a085;
             color: white;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
         }
 
-        /* Ocultar elementos de marca de Streamlit para que parezca app propia */
+        /* --- CORRECCIÓN CRÍTICA MENU --- */
+        /* Ocultamos el menú de 3 puntos y el footer, PERO NO EL HEADER COMPLETO */
         #MainMenu {visibility: hidden;}
         footer {visibility: hidden;}
-        header {visibility: hidden;}
-
-        /* Contenedores blancos (Tarjetas) */
-        .block-container {
-            padding-top: 2rem;
+        
+        /* Esto asegura que la flecha para abrir el sidebar siga visible */
+        [data-testid="stSidebarNav"] {
+            background-image: none;
         }
     </style>
-""",
-    unsafe_allow_html=True,
-)
+""", unsafe_allow_html=True)
+
+# ==============================================================================
+# 2. LOGO Y ENCABEZADO LATERAL (CON INDENTACIÓN CORREGIDA)
+# ==============================================================================
+with st.sidebar:
+    # AQUI ESTABA EL ERROR DE INDENTACIÓN: Todo este bloque debe tener 4 espacios
+    try:
+        # Intenta cargar el logo. Asegúrate que en GitHub se llame EXACTAMENTE 'logo.png' (minúsculas)
+        st.image("logo.png", use_container_width=True) 
+    except Exception as e:
+        # Si falla, muestra un aviso visible para depurar
+        st.error(f"Error cargando logo: {e}")
+        st.markdown("# 🏛️ F910 FISCAL")
+
+    st.markdown("---")
 # ==============================================================================
 # VARIABLES GLOBALES Y MAPEO (Basado en onev2.8.txt - Fuentes 704-706)
 # ==============================================================================
