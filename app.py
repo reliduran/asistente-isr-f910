@@ -353,237 +353,268 @@ elif opcion == "2. Motor Fiscal (Generar F910)":
         except Exception as e:
             st.error(f"Error en motor fiscal: {e}")
 
+
 # ==============================================================================
-# MÓDULO 3: REPORTES Y AUDITORÍA (COMPLETO - RESTAURADO)
+# MÓDULO 3: REPORTES Y AUDITORÍA (MEJORADO - PESTAÑAS SEPARADAS)
 # ==============================================================================
 elif opcion == "3. Reportes y Auditoría (Completo)":
     st.title("📊 Módulo 3: Informes y Auditoría")
 
-    # Pestañas para organizar las 3 funciones clave de onev2.8.txt
-    tab1, tab2, tab3 = st.tabs(
-        ["1. Reporte Aguinaldos", "2. Resumen Gerencial", "3. Auditoría Identidad"]
+    # 1. CARGA DE ARCHIVO CENTRALIZADA (Para no pedirlo en cada pestaña)
+    st.info(
+        "Paso 1: Sube la Base de Datos Unificada (Módulo 1) o el Informe F910 según corresponda."
+    )
+
+    # Subida de archivos (Manejamos dos variables para no confundir lógicas)
+    archivo_base = st.file_uploader(
+        "📂 Sube 'Base_Datos_RRHH_Adaptada.xlsx'", type=["xlsx"], key="base_rrhh"
+    )
+    archivo_f910 = st.file_uploader(
+        "📂 Sube 'Informe_F910_Final.xlsx' (Solo para Resumen Gerencial)",
+        type=["xlsx"],
+        key="base_f910",
+    )
+
+    st.markdown("---")
+
+    # 2. DEFINICIÓN DE PESTAÑAS (Ahora son 4 para separar las auditorías)
+    tab1, tab2, tab3, tab4 = st.tabs(
+        [
+            "1. Reporte Aguinaldos",
+            "2. Resumen Gerencial",
+            "3. Auditoría Nombres",
+            "4. Auditoría DUIs",
+        ]
     )
 
     # ----------------------------------------------------------------------
-    # TAB 1: REPORTE DE AGUINALDOS (Fuente 724-727)
+    # TAB 1: REPORTE DE AGUINALDOS
     # ----------------------------------------------------------------------
     with tab1:
         st.header("🎄 Reporte de Aguinaldos")
-        st.info("Genera tabla dinámica de aguinaldos exentos y gravados por código.")
+        if archivo_base:
+            if st.button("Generar Reporte Aguinaldos"):
+                try:
+                    df = pd.read_excel(archivo_base, dtype=str)
+                    # Conversión numérica
+                    for col in ["Aguinaldo Exento", "Aguinaldo Gravado"]:
+                        if col in df.columns:
+                            df[col] = pd.to_numeric(df[col], errors="coerce").fillna(0)
 
-        f_agui = st.file_uploader(
-            "Sube 'Base_Datos_RRHH_Adaptada.xlsx'", type=["xlsx"], key="agui"
-        )
-
-        if f_agui and st.button("Generar Reporte Aguinaldos"):
-            try:
-                df = pd.read_excel(f_agui, dtype=str)
-                # Conversión numérica
-                for col in ["Aguinaldo Exento", "Aguinaldo Gravado"]:
-                    if col in df.columns:
-                        df[col] = pd.to_numeric(df[col], errors="coerce").fillna(0)
-
-                df["TOTAL_AGUINALDO"] = df["Aguinaldo Exento"] + df["Aguinaldo Gravado"]
-                df_filtro = df[df["TOTAL_AGUINALDO"] > 0.01].copy()
-
-                if df_filtro.empty:
-                    st.warning("No hay datos de aguinaldo.")
-                else:
-                    # Formato de códigos para columnas (cod_01, cod_60...)
-                    df_filtro["CODIGO_FMT"] = "cod_" + df_filtro["CODIGO"].astype(str)
-
-                    # Tabla pivote (Idéntica a onev2.8)
-                    pivot = df_filtro.pivot_table(
-                        index=["Dui", "APELLIDO NOMBRE"],
-                        columns="CODIGO_FMT",
-                        values="TOTAL_AGUINALDO",
-                        aggfunc="sum",
-                        fill_value=0,
+                    df["TOTAL_AGUINALDO"] = (
+                        df["Aguinaldo Exento"] + df["Aguinaldo Gravado"]
                     )
-                    pivot["TOTAL GENERAL"] = pivot.sum(axis=1)
+                    df_filtro = df[df["TOTAL_AGUINALDO"] > 0.01].copy()
 
-                    st.dataframe(pivot)
+                    if df_filtro.empty:
+                        st.warning("No hay datos de aguinaldo.")
+                    else:
+                        df_filtro["CODIGO_FMT"] = "cod_" + df_filtro["CODIGO"].astype(
+                            str
+                        )
+                        pivot = df_filtro.pivot_table(
+                            index=["Dui", "APELLIDO NOMBRE"],
+                            columns="CODIGO_FMT",
+                            values="TOTAL_AGUINALDO",
+                            aggfunc="sum",
+                            fill_value=0,
+                        )
+                        pivot["TOTAL GENERAL"] = pivot.sum(axis=1)
+                        st.dataframe(pivot, use_container_width=True)
 
-                    # Descarga
-                    buffer = io.BytesIO()
-                    pivot.to_excel(buffer)  # Con índice para incluir DUI y Nombre
-                    st.download_button(
-                        "⬇️ Descargar Aguinaldos.xlsx", buffer, "Reporte_Aguinaldos.xlsx"
-                    )
-            except Exception as e:
-                st.error(f"Error: {e}")
+                        buffer = io.BytesIO()
+                        pivot.to_excel(buffer)
+                        st.download_button(
+                            "⬇️ Descargar Aguinaldos.xlsx",
+                            buffer,
+                            "Reporte_Aguinaldos.xlsx",
+                        )
+                except Exception as e:
+                    st.error(f"Error: {e}")
+        else:
+            st.warning("⚠️ Por favor sube 'Base_Datos_RRHH_Adaptada.xlsx' arriba.")
 
     # ----------------------------------------------------------------------
-    # TAB 2: RESUMEN GERENCIAL (Fuente 728-733)
+    # TAB 2: RESUMEN GERENCIAL
     # ----------------------------------------------------------------------
     with tab2:
         st.header("📑 Resumen Ejecutivo F910")
-        st.info("Agrupa el F910 final por código y concepto fiscal.")
-
-        f_res = st.file_uploader(
-            "Sube 'Informe_F910_Final.xlsx'", type=["xlsx"], key="res"
-        )
-
-        if f_res and st.button("Generar Resumen"):
-            try:
-                df = pd.read_excel(f_res)
-                col_cod = "(C) CODIGO"
-
-                if col_cod not in df.columns:
-                    st.error("Archivo incorrecto. Falta columna (C) CODIGO.")
-                else:
-                    # Agrupar
-                    cols_num = [
-                        c
-                        for c in df.columns
-                        if c
-                        not in [
-                            "(A) NIT",
-                            "(B) FECHA EMISION",
-                            "(C) CODIGO",
-                            "(O) NOMBRE",
+        if archivo_f910:
+            if st.button("Generar Resumen"):
+                try:
+                    df = pd.read_excel(archivo_f910)
+                    col_cod = "(C) CODIGO"
+                    if col_cod not in df.columns:
+                        st.error("Archivo incorrecto. Falta columna (C) CODIGO.")
+                    else:
+                        cols_num = [
+                            c
+                            for c in df.columns
+                            if c
+                            not in [
+                                "(A) NIT",
+                                "(B) FECHA EMISION",
+                                "(C) CODIGO",
+                                "(O) NOMBRE",
+                            ]
                         ]
-                    ]
-                    resumen = df.groupby(col_cod)[cols_num].sum().reset_index()
-                    conteo = (
-                        df.groupby(col_cod)
-                        .size()
-                        .reset_index(name="CANTIDAD REGISTROS")
-                    )
-                    final = pd.merge(resumen, conteo, on=col_cod)
+                        resumen = df.groupby(col_cod)[cols_num].sum().reset_index()
+                        conteo = (
+                            df.groupby(col_cod)
+                            .size()
+                            .reset_index(name="CANTIDAD REGISTROS")
+                        )
+                        final = pd.merge(resumen, conteo, on=col_cod)
 
-                    # Mapear nombres de conceptos
-                    final[col_cod] = (
-                        final[col_cod]
-                        .astype(str)
-                        .str.replace(".0", "")
-                        .str.strip()
-                        .str.zfill(2)
-                    )
-                    final["CONCEPTO"] = (
-                        final[col_cod].map(MAPA_CONCEPTOS_F910).fillna("OTRO")
-                    )
+                        # Mapeo
+                        final[col_cod] = (
+                            final[col_cod]
+                            .astype(str)
+                            .str.replace(".0", "")
+                            .str.strip()
+                            .str.zfill(2)
+                        )
+                        final["CONCEPTO"] = (
+                            final[col_cod].map(MAPA_CONCEPTOS_F910).fillna("OTRO")
+                        )
 
-                    # Reordenar
-                    cols_orden = [col_cod, "CONCEPTO", "CANTIDAD REGISTROS"] + cols_num
-                    final = final[cols_orden]
+                        cols_orden = [
+                            col_cod,
+                            "CONCEPTO",
+                            "CANTIDAD REGISTROS",
+                        ] + cols_num
+                        final = final[cols_orden]
 
-                    # Fila de Totales
-                    fila_total = {
-                        col_cod: "TOTAL",
-                        "CONCEPTO": "",
-                        "CANTIDAD REGISTROS": final["CANTIDAD REGISTROS"].sum(),
-                    }
-                    for c in cols_num:
-                        fila_total[c] = final[c].sum()
+                        # Totales
+                        fila_total = {
+                            col_cod: "TOTAL",
+                            "CONCEPTO": "",
+                            "CANTIDAD REGISTROS": final["CANTIDAD REGISTROS"].sum(),
+                        }
+                        for c in cols_num:
+                            fila_total[c] = final[c].sum()
 
-                    final = pd.concat(
-                        [final, pd.DataFrame([fila_total])], ignore_index=True
-                    )
+                        final = pd.concat(
+                            [final, pd.DataFrame([fila_total])], ignore_index=True
+                        )
+                        st.dataframe(final, use_container_width=True)
 
-                    st.dataframe(final)
-
-                    buffer = io.BytesIO()
-                    final.to_excel(buffer, index=False)
-                    st.download_button(
-                        "⬇️ Descargar Resumen Gerencial.xlsx",
-                        buffer,
-                        "Resumen_Ejecutivo.xlsx",
-                    )
-            except Exception as e:
-                st.error(f"Error: {e}")
+                        buffer = io.BytesIO()
+                        final.to_excel(buffer, index=False)
+                        st.download_button(
+                            "⬇️ Descargar Resumen.xlsx", buffer, "Resumen_Ejecutivo.xlsx"
+                        )
+                except Exception as e:
+                    st.error(f"Error: {e}")
+        else:
+            st.warning("⚠️ Por favor sube 'Informe_F910_Final.xlsx' arriba.")
 
     # ----------------------------------------------------------------------
-    # TAB 3: AUDITORÍA (Fuente 733-741 con mejoras de descarga)
+    # TAB 3: AUDITORÍA NOMBRES (Un Nombre -> Muchos DUIs)
     # ----------------------------------------------------------------------
     with tab3:
-        st.header("🔎 Auditoría de Identidad")
-        st.info("Detecta inconsistencias: Un Nombre con varios DUIs o viceversa.")
-
-        f_aud = st.file_uploader(
-            "Sube 'Base_Datos_RRHH_Adaptada.xlsx'", type=["xlsx"], key="aud"
+        st.header("🔎 Auditoría: Nombres vs DUIs")
+        st.markdown(
+            "**Objetivo:** Detectar si una misma persona (Nombre) tiene asignados diferentes números de DUI."
         )
 
-        if f_aud:
-            df = pd.read_excel(f_aud, dtype=str)
-            # Limpieza
-            df["APELLIDO NOMBRE"] = df["APELLIDO NOMBRE"].astype(str).str.strip()
-            df["Dui"] = df["Dui"].astype(str).str.strip()
+        if archivo_base:
+            if st.button("Ejecutar Auditoría Nombres"):
+                df = pd.read_excel(archivo_base, dtype=str)
+                df["APELLIDO NOMBRE"] = df["APELLIDO NOMBRE"].astype(str).str.strip()
+                df["Dui"] = df["Dui"].astype(str).str.strip()
 
-            c1, c2 = st.columns(2)
+                grupos = df.groupby("APELLIDO NOMBRE")["Dui"].unique()
+                errores = grupos[grupos.apply(len) > 1]
 
-            # --- CASO 1: NOMBRES vs DUIs ---
-            with c1:
-                st.subheader("1. Nombres con Multiples DUIs")
-                if st.button("Auditar Nombres"):
-                    grupos = df.groupby("APELLIDO NOMBRE")["Dui"].unique()
-                    errores = grupos[grupos.apply(len) > 1]
-
-                    if not errores.empty:
-                        st.error(f"⚠️ Se encontraron {len(errores)} errores.")
-                        # Formato para descarga de errores
-                        lista = errores.apply(list).tolist()
-                        df_err = pd.DataFrame(lista, index=errores.index)
-                        st.dataframe(df_err)
-
-                        b_err = io.BytesIO()
-                        df_err.to_excel(b_err)
-                        st.download_button(
-                            "📥 Descargar HALLAZGOS (Errores)",
-                            b_err,
-                            "HALLAZGOS_ERRORES_Nombres.xlsx",
-                        )
-                    else:
-                        st.success("✅ Sin duplicados.")
-
-                    # SIEMPRE permitir descargar la lista limpia (tu requerimiento)
-                    df_clean = (
-                        df[["APELLIDO NOMBRE", "Dui"]]
-                        .drop_duplicates()
-                        .sort_values("APELLIDO NOMBRE")
+                if not errores.empty:
+                    st.error(
+                        f"⚠️ Se encontraron {len(errores)} Nombres con múltiples DUIs."
                     )
-                    b_clean = io.BytesIO()
-                    df_clean.to_excel(b_clean, index=False)
+                    lista = errores.apply(list).tolist()
+                    df_err = pd.DataFrame(lista, index=errores.index)
+                    st.dataframe(df_err, use_container_width=True)
+
+                    b_err = io.BytesIO()
+                    df_err.to_excel(b_err)
                     st.download_button(
-                        "📥 Descargar Lista Limpia (Nombres)",
-                        b_clean,
-                        "Auditoria_Limpia_Nombres.xlsx",
+                        "📥 Descargar ERRORES (Nombres).xlsx",
+                        b_err,
+                        "ERRORES_Nombres_vs_Duis.xlsx",
+                    )
+                else:
+                    st.success(
+                        "✅ Validación Perfecta: No hay nombres con DUIs duplicados."
                     )
 
-            # --- CASO 2: DUIs vs NOMBRES ---
-            with c2:
-                st.subheader("2. DUIs con Multiples Nombres")
-                if st.button("Auditar DUIs"):
-                    grupos = df.groupby("Dui")["APELLIDO NOMBRE"].unique()
-                    errores = grupos[grupos.apply(len) > 1]
+                # Lista limpia siempre disponible
+                st.markdown("---")
+                st.caption("Descargar listado maestro de personal (Limpio):")
+                df_clean = (
+                    df[["APELLIDO NOMBRE", "Dui"]]
+                    .drop_duplicates()
+                    .sort_values("APELLIDO NOMBRE")
+                )
+                b_clean = io.BytesIO()
+                df_clean.to_excel(b_clean, index=False)
+                st.download_button(
+                    "📥 Descargar Lista Limpia (Nombres).xlsx",
+                    b_clean,
+                    "Auditoria_Limpia_Nombres.xlsx",
+                )
+        else:
+            st.warning("⚠️ Sube 'Base_Datos_RRHH_Adaptada.xlsx' arriba.")
 
-                    if not errores.empty:
-                        st.error(f"⚠️ Se encontraron {len(errores)} errores.")
-                        lista = errores.apply(list).tolist()
-                        df_err = pd.DataFrame(lista, index=errores.index)
-                        st.dataframe(df_err)
+    # ----------------------------------------------------------------------
+    # TAB 4: AUDITORÍA DUIs (Un DUI -> Muchos Nombres)
+    # ----------------------------------------------------------------------
+    with tab4:
+        st.header("🔎 Auditoría: DUIs vs Nombres")
+        st.markdown(
+            "**Objetivo:** Detectar si un mismo número de DUI está registrado con nombres diferentes (ej. errores de dedo)."
+        )
 
-                        b_err = io.BytesIO()
-                        df_err.to_excel(b_err)
-                        st.download_button(
-                            "📥 Descargar HALLAZGOS (Errores)",
-                            b_err,
-                            "HALLAZGOS_ERRORES_Duis.xlsx",
-                        )
-                    else:
-                        st.success("✅ Sin duplicados.")
+        if archivo_base:
+            if st.button("Ejecutar Auditoría DUIs"):
+                df = pd.read_excel(archivo_base, dtype=str)
+                df["APELLIDO NOMBRE"] = df["APELLIDO NOMBRE"].astype(str).str.strip()
+                df["Dui"] = df["Dui"].astype(str).str.strip()
 
-                    # Lista limpia
-                    df_clean = (
-                        df[["Dui", "APELLIDO NOMBRE"]]
-                        .drop_duplicates()
-                        .sort_values("Dui")
+                grupos = df.groupby("Dui")["APELLIDO NOMBRE"].unique()
+                errores = grupos[grupos.apply(len) > 1]
+
+                if not errores.empty:
+                    st.error(
+                        f"⚠️ Se encontraron {len(errores)} DUIs con múltiples Nombres."
                     )
-                    b_clean = io.BytesIO()
-                    df_clean.to_excel(b_clean, index=False)
+                    lista = errores.apply(list).tolist()
+                    df_err = pd.DataFrame(lista, index=errores.index)
+                    st.dataframe(df_err, use_container_width=True)
+
+                    b_err = io.BytesIO()
+                    df_err.to_excel(b_err)
                     st.download_button(
-                        "📥 Descargar Lista Limpia (DUIs)",
-                        b_clean,
-                        "Auditoria_Limpia_Duis.xlsx",
+                        "📥 Descargar ERRORES (Duis).xlsx",
+                        b_err,
+                        "ERRORES_Duis_vs_Nombres.xlsx",
+                    )
+                else:
+                    st.success(
+                        "✅ Validación Perfecta: Todos los DUIs tienen un único nombre."
                     )
 
+                # Lista limpia
+                st.markdown("---")
+                st.caption("Descargar listado maestro de DUIs (Limpio):")
+                df_clean = (
+                    df[["Dui", "APELLIDO NOMBRE"]].drop_duplicates().sort_values("Dui")
+                )
+                b_clean = io.BytesIO()
+                df_clean.to_excel(b_clean, index=False)
+                st.download_button(
+                    "📥 Descargar Lista Limpia (DUIs).xlsx",
+                    b_clean,
+                    "Auditoria_Limpia_Duis.xlsx",
+                )
+        else:
+            st.warning("⚠️ Sube 'Base_Datos_RRHH_Adaptada.xlsx' arriba.")
