@@ -101,9 +101,9 @@ opcion = st.sidebar.radio(
 
 st.sidebar.markdown("---")
 st.sidebar.caption("Asistente F910 Web v2.8 (Full)")
-st.sidebar.markdown("**Desarrollador:** Ruben Duran")
+st.sidebar.markdown("**Desarrollador:** Rubénn Elí Durán Ramiréz")
 st.sidebar.info(
-    "Privacidad: Los datos se procesan en memoria RAM y no se guardan en el servidor."
+    "Privacidad: Los datos se procesan en memoria RAM y no se guardan en el servidor, al cerrar la ventana todo se borra del servidor"
 )
 
 # ==============================================================================
