@@ -6,6 +6,9 @@ on:
 jobs:
   build-macos:
     runs-on: macos-latest
+    defaults:
+      run:
+        working-directory: asistente_fsr
     steps:
       - uses: actions/checkout@v4
       - name: Configurar Python 3.12
@@ -24,7 +27,7 @@ jobs:
       - name: Comprimir para descarga
         run: |
           cd dist
-          zip -r ../Asistente.Fiscal.F910.v2.7.2_Mac.zip Asistente.Fiscal.F910.v2.7.2.app
+          zip -r ../../Asistente.Fiscal.F910.v2.7.2_Mac.zip Asistente.Fiscal.F910.v2.7.2.app
       - name: Subir a GitHub
         uses: actions/upload-artifact@v4
         with:
@@ -33,6 +36,9 @@ jobs:
 
   build-windows:
     runs-on: windows-latest
+    defaults:
+      run:
+        working-directory: asistente_fsr
     steps:
       - uses: actions/checkout@v4
       - name: Configurar Python 3.12
@@ -51,4 +57,4 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: App-Windows-Exe
-          path: dist/Asistente.Fiscal.F910.v2.7.2.exe
+          path: asistente_fsr/dist/Asistente.Fiscal.F910.v2.7.2.exe
