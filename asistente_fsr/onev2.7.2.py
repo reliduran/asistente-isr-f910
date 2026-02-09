@@ -15,7 +15,6 @@ try:
 except Exception:
     pass
 # ------------------------------------------------
-¿Cómo quedará su código? (Vista previa):
 
 # =============================================================================
 # CONFIGURACIÓN VISUAL (ESTILO 2026)
