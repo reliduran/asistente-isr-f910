@@ -8,6 +8,7 @@ jobs:
     runs-on: macos-latest
     defaults:
       run:
+        # RUTA CORREGIDA CON GUION BAJO
         working-directory: asistente_fsr
     steps:
       - uses: actions/checkout@v4
@@ -38,6 +39,7 @@ jobs:
     runs-on: windows-latest
     defaults:
       run:
+        # RUTA CORREGIDA CON GUION BAJO
         working-directory: asistente_fsr
     steps:
       - uses: actions/checkout@v4
