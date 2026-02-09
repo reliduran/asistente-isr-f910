@@ -136,6 +136,16 @@
         const os = window.navigator.platform.toLowerCase();
         const userAgent = window.navigator.userAgent.toLowerCase();
 
+    // 1. Nueva variable para detectar el navegador
+        const ua = window.navigator.userAgent.toLowerCase();
+
+    // 2. Filtro para evitar descargas en Celulares (Android/iOS)
+        if (ua.includes('android') || ua.includes('iphone') || ua.includes('ipad')) {
+            msg.innerText = "⚠️ Este asistente requiere una computadora Windows, Mac o Linux.";
+            link.style.display = 'none';
+            return; // Detiene la ejecución para que no detecte "Linux" por error
+        }
+      
         if (os.includes('win')) {
             link.href = `${repo}/Asistente.F910.Windows.exe`;
             msg.innerText = "Recomendado para tu Windows";
