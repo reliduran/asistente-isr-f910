@@ -103,23 +103,52 @@
     </footer>
 
     <script>
-        const version = "2.7.2";
-        const repo = "https://github.com/reliduran/asistente-isr-f910/releases/download/v" + version;
-        const link = document.getElementById('download-link');
-        const msg = document.getElementById('detect-msg');
+    const version = "2.7.2";
+    const repo = "https://github.com/reliduran/asistente-isr-f910/releases/download/v" + version;
+    const link = document.getElementById('download-link');
+    const msg = document.getElementById('detect-msg');
+    
+    async function configurarDescargaInteligente() {
         const os = window.navigator.platform.toLowerCase();
+        const userAgent = window.navigator.userAgent.toLowerCase();
 
+        // 1. Detección de Windows
         if (os.includes('win')) {
-            link.href = `${repo}/Asistente.Fiscal.F910.v${version}.exe`;
+            // Usando el nombre exacto generado por GitHub Actions
+            link.href = `${repo}/Asistente.F910.Windows.exe`;
             msg.innerText = "Disponible para Windows (Ejecutable .exe)";
-        } else if (os.includes('mac')) {
-            link.href = `${repo}/Asistente.Fiscal.F910.v${version}.zip`;
-            msg.innerText = "Disponible para macOS (Archivo .zip)";
-        } else {
-            link.href = "https://github.com/reliduran/asistente-isr-f910/releases/latest";
-            msg.innerText = "Selecciona la versión para tu sistema en GitHub";
+        } 
+        // 2. Detección de macOS
+        else if (os.includes('mac')) {
+            // Lógica para detectar Apple Silicon (M1/M2/M3)
+            let esSilicon = userAgent.includes("arm64");
+            
+            // Verificación adicional para navegadores modernos (Chrome/Edge)
+            if (!esSilicon && navigator.userAgentData) {
+                const data = await navigator.userAgentData.getHighEntropyValues(["architecture"]);
+                esSilicon = data.architecture === "arm";
+            }
+
+            if (esSilicon) {
+                // Tu nueva build de precisión para procesadores modernos
+                link.href = `${repo}/Asistente.F910.Silicon.zip`;
+                msg.innerText = "Disponible para macOS Apple Silicon (Chip M1/M2/M3)";
+            } else {
+                // Tu build "hecha en casa" para procesadores Intel antiguos
+                link.href = `${repo}/Asistente.Fiscal.F910.v${version}.zip`;
+                msg.innerText = "Disponible para macOS Intel (Procesador antiguo)";
+            }
+        } 
+        // 3. Otros sistemas
+        else {
+            link.href = "https://github.com/reliduran/asistente-isr-f910/releases/tag/v" + version;
+            msg.innerText = "Selecciona la versión manual en GitHub";
         }
-    </script>
+    }
+
+    configurarDescargaInteligente();
+</script>
+
 
 </body>
 </html>
