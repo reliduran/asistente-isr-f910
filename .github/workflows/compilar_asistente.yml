@@ -1,11 +1,10 @@
-name: Compilación Apple Silicon v2.7.2
+name: Compilación_Final_v2.7.2
 on:
   push:
     branches: [ main ]
 
 jobs:
   build-macos:
-    # Esta máquina es Apple Silicon nativa
     runs-on: macos-14
     steps:
       - uses: actions/checkout@v4
@@ -20,12 +19,12 @@ jobs:
           cd asistente_fsr
           python3 -m PyInstaller --clean --onedir --windowed \
             --add-data "logo.png:." \
-            --name "Asistente.Fiscal.F910.vSilic.2.7.2" onev2.7.2.py
-      - name: Comprimir para descarga
+            --name "Asistente.F910.Silicon" onev2.7.2.py
+      - name: Comprimir App
         run: |
           cd asistente_fsr/dist
-          zip -r ../../Asistente.F910.Silicon.zip Asistente.Fiscal.F910.vSilic.2.7.2.app
-      - name: Subir a GitHub
+          zip -r ../../Asistente.F910.Silicon.zip Asistente.F910.Silicon.app
+      - name: Subir Artifact
         uses: actions/upload-artifact@v4
         with:
           name: App-Mac-Silicon
@@ -42,13 +41,12 @@ jobs:
       - name: Instalar Dependencias
         run: pip install pandas numpy requests pyinstaller openpyxl
       - name: Compilar para Windows
+        # CORRECCIÓN: Comando en una sola línea para evitar errores de PowerShell
         run: |
           cd asistente_fsr
-          python -m PyInstaller --clean --onefile --windowed \
-            --add-data "logo.png;." \
-            --name "Asistente.Fiscal.F910.v2.7.2" onev2.7.2.py
-      - name: Subir a GitHub
+          python -m PyInstaller --clean --onefile --windowed --add-data "logo.png;." --name "Asistente.F910.Windows" onev2.7.2.py
+      - name: Subir Artifact
         uses: actions/upload-artifact@v4
         with:
           name: App-Windows-Exe
-          path: asistente_fsr/dist/Asistente.Fiscal.F910.v2.7.2.exe
+          path: asistente_fsr/dist/Asistente.F910.Windows.exe
