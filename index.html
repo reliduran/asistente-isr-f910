@@ -155,6 +155,10 @@
                 link.href = `${repo}/Asistente.Fiscal.F910.v${version}.zip`;
                 msg.innerText = "Recomendado para tu Mac (Intel)";
             }
+            else if (os.includes('linux')) {
+                link.href = `${repo}/Asistente.F910.Linux`;
+                msg.innerText = "Recomendado para tu sistema Linux";
+            }
         } 
         else {
             link.innerText = "Ver todas las versiones";
