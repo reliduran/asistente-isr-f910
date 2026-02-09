@@ -1,15 +1,12 @@
-name: Compilación Multiplataforma v2.7.2
+name: Compilación Apple Silicon v2.7.2
 on:
   push:
     branches: [ main ]
 
 jobs:
   build-macos:
-    runs-on: macos-latest
-    defaults:
-      run:
-        # RUTA CORREGIDA CON GUION BAJO
-        working-directory: asistente_fsr
+    # Esta máquina es Apple Silicon nativa
+    runs-on: macos-14
     steps:
       - uses: actions/checkout@v4
       - name: Configurar Python 3.12
@@ -17,30 +14,25 @@ jobs:
         with:
           python-version: '3.12'
       - name: Instalar Dependencias
+        run: pip install pandas numpy requests pyinstaller openpyxl
+      - name: Compilar para Apple Silicon
         run: |
-          pip install pandas numpy requests pyinstaller openpyxl
-      - name: Compilar App Universal (Mac)
-        run: |
+          cd asistente_fsr
           python3 -m PyInstaller --clean --onedir --windowed \
             --add-data "logo.png:." \
-            --target-architecture universal2 \
-            --name "Asistente.Fiscal.F910.v2.7.2" onev2.7.2.py
+            --name "Asistente.Fiscal.F910.vSilic.2.7.2" onev2.7.2.py
       - name: Comprimir para descarga
         run: |
-          cd dist
-          zip -r ../../Asistente.Fiscal.F910.v2.7.2_Mac.zip Asistente.Fiscal.F910.v2.7.2.app
+          cd asistente_fsr/dist
+          zip -r ../../Asistente.F910.Silicon.zip Asistente.Fiscal.F910.vSilic.2.7.2.app
       - name: Subir a GitHub
         uses: actions/upload-artifact@v4
         with:
-          name: App-Mac-Universal
-          path: Asistente.Fiscal.F910.v2.7.2_Mac.zip
+          name: App-Mac-Silicon
+          path: Asistente.F910.Silicon.zip
 
   build-windows:
     runs-on: windows-latest
-    defaults:
-      run:
-        # RUTA CORREGIDA CON GUION BAJO
-        working-directory: asistente_fsr
     steps:
       - uses: actions/checkout@v4
       - name: Configurar Python 3.12
@@ -48,10 +40,10 @@ jobs:
         with:
           python-version: '3.12'
       - name: Instalar Dependencias
+        run: pip install pandas numpy requests pyinstaller openpyxl
+      - name: Compilar para Windows
         run: |
-          pip install pandas numpy requests pyinstaller openpyxl
-      - name: Compilar Ejecutable (Win)
-        run: |
+          cd asistente_fsr
           python -m PyInstaller --clean --onefile --windowed \
             --add-data "logo.png;." \
             --name "Asistente.Fiscal.F910.v2.7.2" onev2.7.2.py
