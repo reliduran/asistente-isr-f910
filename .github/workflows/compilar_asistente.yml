@@ -50,3 +50,29 @@ jobs:
         with:
           name: App-Windows-Exe
           path: asistente_fsr/dist/Asistente.F910.Windows.exe
+  build-linux:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Configurar Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Instalar dependencias del sistema
+        # Linux necesita tk-dev para que la interfaz visual de Ruben funcione
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y python3-tk
+      - name: Instalar librerías Python
+        run: pip install pandas numpy requests pyinstaller openpyxl
+      - name: Compilar para Linux
+        run: |
+          cd asistente_fsr
+          python3 -m PyInstaller --clean --onefile --windowed \
+            --add-data "logo.png:." \
+            --name "Asistente.F910.Linux" onev2.7.2.py
+      - name: Subir Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: App-Linux-Binary
+          path: asistente_fsr/dist/Asistente.F910.Linux
