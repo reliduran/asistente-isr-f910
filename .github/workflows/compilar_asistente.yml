@@ -1,0 +1,54 @@
+name: Compilación Multiplataforma v2.7.2
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  build-macos:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Configurar Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Instalar Dependencias
+        run: |
+          pip install pandas numpy requests pyinstaller openpyxl
+      - name: Compilar App Universal (Mac)
+        run: |
+          python3 -m PyInstaller --clean --onedir --windowed \
+            --add-data "logo.png:." \
+            --target-architecture universal2 \
+            --name "Asistente.Fiscal.F910.v2.7.2" onev2.7.2.py
+      - name: Comprimir para descarga
+        run: |
+          cd dist
+          zip -r ../Asistente.Fiscal.F910.v2.7.2_Mac.zip Asistente.Fiscal.F910.v2.7.2.app
+      - name: Subir a GitHub
+        uses: actions/upload-artifact@v4
+        with:
+          name: App-Mac-Universal
+          path: Asistente.Fiscal.F910.v2.7.2_Mac.zip
+
+  build-windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Configurar Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Instalar Dependencias
+        run: |
+          pip install pandas numpy requests pyinstaller openpyxl
+      - name: Compilar Ejecutable (Win)
+        run: |
+          python -m PyInstaller --clean --onefile --windowed \
+            --add-data "logo.png;." \
+            --name "Asistente.Fiscal.F910.v2.7.2" onev2.7.2.py
+      - name: Subir a GitHub
+        uses: actions/upload-artifact@v4
+        with:
+          name: App-Windows-Exe
+          path: dist/Asistente.Fiscal.F910.v2.7.2.exe
