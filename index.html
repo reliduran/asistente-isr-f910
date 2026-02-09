@@ -127,7 +127,6 @@
     const link = document.getElementById('download-link');
     const msg = document.getElementById('detect-msg');
     
-    // Función para mostrar/ocultar opciones manuales
     function toggleOpciones() {
         const div = document.getElementById('manual-links');
         div.style.display = (div.style.display === 'none') ? 'block' : 'none';
@@ -143,23 +142,27 @@
         } 
         else if (os.includes('mac')) {
             let esSilicon = userAgent.includes("arm64");
+            // Mantenemos tu lógica de alta entropía pero protegemos que no se trabe
             if (!esSilicon && navigator.userAgentData) {
-                const data = await navigator.userAgentData.getHighEntropyValues(["architecture"]);
-                esSilicon = data.architecture === "arm";
+                try {
+                    const data = await navigator.userAgentData.getHighEntropyValues(["architecture"]);
+                    esSilicon = (data.architecture === "arm");
+                } catch (e) { esSilicon = false; }
             }
 
             if (esSilicon) {
                 link.href = `${repo}/Asistente.F910.Silicon.zip`;
-                msg.innerText = "Recomendado para tu Mac (Chip M1/M2/M3)";
+                msg.innerText = "Recomendado para tu Mac (Chip de Apple)";
             } else {
                 link.href = `${repo}/Asistente.Fiscal.F910.v${version}.zip`;
                 msg.innerText = "Recomendado para tu Mac (Intel)";
             }
-            else if (os.includes('linux')) {
-                link.href = `${repo}/Asistente.F910.Linux`;
-                msg.innerText = "Recomendado para tu sistema Linux";
-            }
         } 
+        // INSERT DE LINUX QUE ME PEDISTE
+        else if (os.includes('linux')) {
+            link.href = `${repo}/Asistente.F910.Linux`;
+            msg.innerText = "Recomendado para tu sistema Linux";
+        }
         else {
             link.innerText = "Ver todas las versiones";
             link.href = "https://github.com/reliduran/asistente-isr-f910/releases/tag/v" + version;
@@ -169,7 +172,6 @@
 
     configurarDescargaInteligente();
 </script>
-
 
 </body>
 </html>
