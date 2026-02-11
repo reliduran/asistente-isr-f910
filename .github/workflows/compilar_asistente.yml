@@ -1,4 +1,4 @@
-name: Compilación_Final_v2.7.2
+name: Compilación_Final_v2.7.3
 on:
   push:
     branches: [ main ]
@@ -19,7 +19,7 @@ jobs:
           cd asistente_fsr
           python3 -m PyInstaller --clean --onedir --windowed \
             --add-data "logo.png:." \
-            --name "Asistente.F910.Silicon" onev2.7.2.py
+            --name "Asistente.F910.Silicon" onev2.7.3.py
       - name: Comprimir App
         run: |
           cd asistente_fsr/dist
@@ -44,7 +44,7 @@ jobs:
         # CORRECCIÓN: Comando en una sola línea para evitar errores de PowerShell
         run: |
           cd asistente_fsr
-          python -m PyInstaller --clean --onefile --windowed --add-data "logo.png;." --name "Asistente.F910.Windows" onev2.7.2.py
+          python -m PyInstaller --clean --onefile --windowed --add-data "logo.png;." --name "Asistente.F910.Windows" onev2.7.3.py
       - name: Subir Artifact
         uses: actions/upload-artifact@v4
         with:
@@ -70,7 +70,7 @@ jobs:
           cd asistente_fsr
           python3 -m PyInstaller --clean --onefile --windowed \
             --add-data "logo.png:." \
-            --name "Asistente.F910.Linux" onev2.7.2.py
+            --name "Asistente.F910.Linux" onev2.7.3.py
       - name: Subir Artifact
         uses: actions/upload-artifact@v4
         with:
